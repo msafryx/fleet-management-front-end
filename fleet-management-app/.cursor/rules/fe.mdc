@@ -1,0 +1,15 @@
+---
+alwaysApply: true
+---
+      # --- Documentation Rules ---
+      - Do not generate or modify Markdown (.md) documentation files unless explicitly requested by the user.
+      - Avoid creating README.md, CHANGELOG.md, or CONTRIBUTING.md automatically.
+      - Focus responses only on source code, not documentation.
+
+      # --- Code Quality & Logic ---
+      - Always produce code with solid, production-grade logic.
+      - Ensure code readability and maintainability without redundant comments.
+      - Extract common form logic into custom hooks.
+      - Consolidate duplicate table components to reduce code repetition.
+      - Centralize API call logic in a single utility or service layer once backend integration exists.
+      - Use modular, reusable components across the project.
