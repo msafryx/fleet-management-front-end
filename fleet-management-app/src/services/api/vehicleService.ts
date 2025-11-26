@@ -50,7 +50,7 @@ class VehicleService {
         };
       }
 
-      return response as ApiResponse<Vehicle[]>;
+      return response as unknown as ApiResponse<Vehicle[]>;
     } catch (error) {
       console.error('Error fetching vehicles:', error);
       return {
@@ -76,7 +76,7 @@ class VehicleService {
         };
       }
 
-      return response as ApiResponse<Vehicle>;
+      return response as unknown as ApiResponse<Vehicle>;
     } catch (error) {
       console.error('Error fetching vehicle:', error);
       return {
@@ -104,7 +104,7 @@ class VehicleService {
         };
       }
 
-      return response as ApiResponse<Vehicle>;
+      return response as unknown as ApiResponse<Vehicle>;
     } catch (error) {
       console.error('Error creating vehicle:', error);
       return {
@@ -132,7 +132,7 @@ class VehicleService {
         };
       }
 
-      return response as ApiResponse<Vehicle>;
+      return response as unknown as ApiResponse<Vehicle>;
     } catch (error) {
       console.error('Error updating vehicle:', error);
       return {
@@ -230,7 +230,7 @@ class VehicleService {
         };
       }
 
-      return response as ApiResponse<Vehicle[]>;
+      return response as unknown as ApiResponse<Vehicle[]>;
     } catch (error) {
       console.error('Error fetching low fuel vehicles:', error);
       return {

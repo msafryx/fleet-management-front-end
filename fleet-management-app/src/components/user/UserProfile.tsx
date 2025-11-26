@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Phone, Briefcase, MapPin, Calendar, Shield, Key, Camera } from 'lucide-react';
+import { User as UserIcon, Mail, Phone, Briefcase, MapPin, Calendar, Shield, Key, Camera } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -9,16 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
 import { Alert, AlertDescription } from '../ui/alert';
+import { User } from '@/types';
 
 interface UserProfileProps {
-  user: {
-    name: string;
-    email: string;
-    role: string;
-    department: string;
-    avatar: string;
-  };
-  onUpdateUser: (user: { name: string; email: string; role: string; department: string; avatar: string }) => void;
+  user: User;
+  onUpdateUser: (user: User) => void;
 }
 
 export function UserProfile({ user, onUpdateUser }: UserProfileProps) {

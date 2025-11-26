@@ -108,7 +108,7 @@ export function DriverManagement() {
 
   const handleAssignVehicle = (driver: Driver) => {
     setDriverToAssign(driver);
-    setSelectedVehicle(driver.vehicle !== 'Unassigned' ? driver.vehicle : '');
+    setSelectedVehicle(driver.vehicle && driver.vehicle !== 'Unassigned' ? driver.vehicle : '');
     setIsAssignDialogOpen(true);
   };
 
@@ -151,9 +151,9 @@ export function DriverManagement() {
   // Only recalculate when dependencies change
   const filteredDrivers = useMemo(() => {
     return drivers.filter(driver => 
-      driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (driver.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       driver.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      driver.id.toLowerCase().includes(searchQuery.toLowerCase())
+      (driver.id || '').toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [drivers, searchQuery]);
 
@@ -228,14 +228,14 @@ export function DriverManagement() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback>{getInitials(driver.name)}</AvatarFallback>
+                    <AvatarFallback>{getInitials(driver.name || '')}</AvatarFallback>
                   </Avatar>
                   <div>
                     <CardTitle className="text-lg">{driver.name}</CardTitle>
                     <p className="text-sm text-muted-foreground">ID: {driver.id}</p>
                   </div>
                 </div>
-                {getStatusBadge(driver.status)}
+                {getStatusBadge(driver.status || 'unavailable')}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -399,13 +399,13 @@ export function DriverManagement() {
             <div className="grid gap-4 py-4">
               <div className="flex items-center gap-4 pb-2 border-b">
                 <Avatar className="h-16 w-16">
-                  <AvatarFallback>{getInitials(selectedDriver.name)}</AvatarFallback>
+                  <AvatarFallback>{getInitials(selectedDriver.name || '')}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <h3 className="font-semibold">{selectedDriver.name}</h3>
                   <p className="text-sm text-muted-foreground">{selectedDriver.email}</p>
                 </div>
-                {getStatusBadge(selectedDriver.status)}
+                {getStatusBadge(selectedDriver.status || 'unavailable')}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

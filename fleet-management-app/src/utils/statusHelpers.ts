@@ -13,7 +13,8 @@ import {
   Wrench,
   UserX,
   Navigation,
-  Star
+  Star,
+  XCircle
 } from 'lucide-react';
 import type { 
   VehicleStatus, 
@@ -142,6 +143,11 @@ export const maintenanceStatusConfig: StatusConfigMap<MaintenanceStatus> = {
     label: 'Completed',
     variant: 'secondary',
     icon: CheckCircle
+  },
+  cancelled: {
+    label: 'Cancelled',
+    variant: 'secondary',
+    icon: XCircle
   }
 };
 

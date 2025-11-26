@@ -5,10 +5,9 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
-import { Loader } from './ui/loader';
 import { scheduleService } from '@/services/api';
 import type { DriverSchedule } from '@/types';
-import { AlertTriangle, Search, Calendar, Clock, MapPin, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Search, Calendar, Clock, MapPin, CheckCircle, Loader2 } from 'lucide-react';
 
 export function ScheduleConflictChecker() {
   const [driverId, setDriverId] = useState('');
@@ -138,7 +137,7 @@ export function ScheduleConflictChecker() {
         >
           {isChecking ? (
             <>
-              <Loader className="h-4 w-4" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Checking...
             </>
           ) : (

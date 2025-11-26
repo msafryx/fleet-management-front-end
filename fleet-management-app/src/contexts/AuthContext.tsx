@@ -20,14 +20,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface User {
-  name: string;
-  email: string;
-  role: 'admin' | 'employee';
-  department: string;
-  avatar: string;
-}
+import { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
@@ -72,11 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Create mock user session
       const newUser: User = {
+        id: '1',
         name: role === 'admin' ? 'Admin User' : 'Employee User',
         email: email,
         role: role,
         department: 'Fleet Operations',
-        avatar: ''
+        avatar: '',
+        status: 'active',
+        lastLogin: new Date().toISOString(),
       };
       
       setUser(newUser);

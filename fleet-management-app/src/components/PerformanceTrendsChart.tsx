@@ -5,10 +5,9 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
-import { Loader } from './ui/loader';
 import { formService } from '@/services/api';
 import type { PerformanceTrends } from '@/types';
-import { TrendingUp, Search, AlertCircle, BarChart3, Fuel, Clock, Award } from 'lucide-react';
+import { TrendingUp, Search, AlertCircle, BarChart3, Fuel, Clock, Award, Loader2 } from 'lucide-react';
 
 export function PerformanceTrendsChart() {
   const [driverId, setDriverId] = useState('');
@@ -126,7 +125,7 @@ export function PerformanceTrendsChart() {
         >
           {isLoading ? (
             <>
-              <Loader className="h-4 w-4" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Loading...
             </>
           ) : (
