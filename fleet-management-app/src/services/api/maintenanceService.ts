@@ -34,7 +34,7 @@ export interface MaintenanceFilters {
 }
 
 export interface MaintenanceCreateData {
-  id: string;
+  id?: string;
   vehicle_id: string;
   type: string;
   description?: string;
@@ -66,6 +66,134 @@ export interface MaintenanceUpdateData {
   notes?: string;
   parts_needed?: any;
   attachments?: any;
+}
+
+// New Types
+export interface Technician {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  specialization: string[];
+  status: 'available' | 'busy' | 'off-duty';
+  rating: number;
+  completed_jobs: number;
+  active_jobs: number;
+  certifications: string[];
+  hourly_rate: number;
+  join_date: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TechnicianCreateData {
+  name: string;
+  email: string;
+  phone: string;
+  specialization?: string[];
+  status?: string;
+  certifications?: string[];
+  hourly_rate: number;
+  join_date?: string;
+}
+
+export interface TechnicianUpdateData {
+  name?: string;
+  email?: string;
+  phone?: string;
+  specialization?: string[];
+  status?: string;
+  rating?: number;
+  completed_jobs?: number;
+  active_jobs?: number;
+  certifications?: string[];
+  hourly_rate?: number;
+}
+
+export interface Part {
+  id: string;
+  name: string;
+  part_number: string;
+  category: string;
+  quantity: number;
+  min_quantity: number;
+  unit_cost: number;
+  supplier: string;
+  location: string;
+  last_restocked?: string;
+  used_in: string[];
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PartCreateData {
+  name: string;
+  part_number: string;
+  category: string;
+  quantity: number;
+  min_quantity: number;
+  unit_cost: number;
+  supplier?: string;
+  location?: string;
+  used_in?: string[];
+}
+
+export interface PartUpdateData {
+  name?: string;
+  part_number?: string;
+  category?: string;
+  quantity?: number;
+  min_quantity?: number;
+  unit_cost?: number;
+  supplier?: string;
+  location?: string;
+  used_in?: string[];
+}
+
+export interface RecurringSchedule {
+  id: string;
+  name: string;
+  vehicle_id: string;
+  maintenance_type: string;
+  description: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly' | 'mileage-based';
+  frequency_value: number;
+  estimated_cost: number;
+  estimated_duration: number;
+  assigned_to: string;
+  is_active: boolean;
+  last_executed?: string;
+  next_scheduled?: string;
+  total_executions: number;
+  created_date: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface RecurringScheduleCreateData {
+  name: string;
+  vehicle_id: string;
+  maintenance_type: string;
+  description?: string;
+  frequency: string;
+  frequency_value: number;
+  estimated_cost?: number;
+  estimated_duration?: number;
+  assigned_to?: string;
+  is_active?: boolean;
+}
+
+export interface RecurringScheduleUpdateData {
+  name?: string;
+  description?: string;
+  frequency?: string;
+  frequency_value?: number;
+  estimated_cost?: number;
+  estimated_duration?: number;
+  assigned_to?: string;
+  is_active?: boolean;
+  last_executed?: string;
+  next_scheduled?: string;
 }
 
 class MaintenanceService {
@@ -120,27 +248,9 @@ class MaintenanceService {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        return {
-          data: null as any,
-          success: false,
-          error: errorData.message || `HTTP Error: ${response.status}`,
-        };
-      }
-
-      const data = await response.json();
-      return {
-        data,
-        success: true,
-      };
+      return this.handleResponse(response);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch maintenance items';
-      return {
-        data: null as any,
-        success: false,
-        error: message,
-      };
+      return this.handleError(error);
     }
   }
 
@@ -157,27 +267,9 @@ class MaintenanceService {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        return {
-          data: null as any,
-          success: false,
-          error: errorData.message || `HTTP Error: ${response.status}`,
-        };
-      }
-
-      const data = await response.json();
-      return {
-        data,
-        success: true,
-      };
+      return this.handleResponse(response);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch maintenance item';
-      return {
-        data: null as any,
-        success: false,
-        error: message,
-      };
+      return this.handleError(error);
     }
   }
 
@@ -195,28 +287,9 @@ class MaintenanceService {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        return {
-          data: null as any,
-          success: false,
-          error: errorData.message || `HTTP Error: ${response.status}`,
-        };
-      }
-
-      const responseData = await response.json();
-      return {
-        data: responseData,
-        success: true,
-        message: 'Maintenance item created successfully',
-      };
+      return this.handleResponse(response);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to create maintenance item';
-      return {
-        data: null as any,
-        success: false,
-        error: message,
-      };
+      return this.handleError(error);
     }
   }
 
@@ -234,28 +307,9 @@ class MaintenanceService {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        return {
-          data: null as any,
-          success: false,
-          error: errorData.message || `HTTP Error: ${response.status}`,
-        };
-      }
-
-      const responseData = await response.json();
-      return {
-        data: responseData,
-        success: true,
-        message: 'Maintenance item updated successfully',
-      };
+      return this.handleResponse(response);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update maintenance item';
-      return {
-        data: null as any,
-        success: false,
-        error: message,
-      };
+      return this.handleError(error);
     }
   }
 
@@ -287,12 +341,7 @@ class MaintenanceService {
         message: 'Maintenance item deleted successfully',
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete maintenance item';
-      return {
-        data: undefined as void,
-        success: false,
-        error: message,
-      };
+      return this.handleError(error);
     }
   }
 
@@ -309,27 +358,9 @@ class MaintenanceService {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        return {
-          data: null as any,
-          success: false,
-          error: errorData.message || `HTTP Error: ${response.status}`,
-        };
-      }
-
-      const data = await response.json();
-      return {
-        data,
-        success: true,
-      };
+      return this.handleResponse(response);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch maintenance summary';
-      return {
-        data: null as any,
-        success: false,
-        error: message,
-      };
+      return this.handleError(error);
     }
   }
 
@@ -346,27 +377,9 @@ class MaintenanceService {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        return {
-          data: null as any,
-          success: false,
-          error: errorData.message || `HTTP Error: ${response.status}`,
-        };
-      }
-
-      const data = await response.json();
-      return {
-        data,
-        success: true,
-      };
+      return this.handleResponse(response);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to fetch vehicle history';
-      return {
-        data: null as any,
-        success: false,
-        error: message,
-      };
+      return this.handleError(error);
     }
   }
 
@@ -383,30 +396,312 @@ class MaintenanceService {
         },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+      return this.handleResponse(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  /**
+   * Get maintenance items by vehicle ID
+   */
+  async getByVehicle(vehicleId: string): Promise<ApiResponse<MaintenanceItem[]>> {
+    try {
+      const response = await this.getAll({ vehicle: vehicleId }, 1, 100);
+      if (response.success && response.data) {
         return {
-          data: null as any,
-          success: false,
-          error: errorData.message || `HTTP Error: ${response.status}`,
+          data: response.data.items,
+          success: true,
         };
       }
-
-      const data = await response.json();
-      return {
-        data,
-        success: true,
-      };
+      return response as any;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update statuses';
+      return this.handleError(error);
+    }
+  }
+
+  /**
+   * Get overdue maintenance items
+   */
+  async getOverdue(): Promise<ApiResponse<MaintenanceItem[]>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/overdue`;
+      const response = await fetch(url);
+      return this.handleResponse(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  /**
+   * Get upcoming maintenance (due soon + scheduled)
+   */
+  async getUpcoming(): Promise<ApiResponse<MaintenanceItem[]>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/upcoming`;
+      const response = await fetch(url);
+      return this.handleResponse(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  /**
+   * Complete a maintenance item
+   */
+  async complete(itemId: string, actualCost?: number, notes?: string): Promise<ApiResponse<MaintenanceItem>> {
+    const updateData: MaintenanceUpdateData = {
+      status: 'completed',
+      completed_date: new Date().toISOString(),
+      actual_cost: actualCost,
+      notes: notes,
+    };
+    return this.update(itemId, updateData);
+  }
+
+  /**
+   * Cancel a maintenance item
+   */
+  async cancel(itemId: string, reason?: string): Promise<ApiResponse<MaintenanceItem>> {
+    const updateData: MaintenanceUpdateData = {
+      status: 'cancelled',
+      notes: reason,
+    };
+    return this.update(itemId, updateData);
+  }
+
+  /**
+   * Start maintenance (set to in_progress)
+   */
+  async start(itemId: string): Promise<ApiResponse<MaintenanceItem>> {
+    const updateData: MaintenanceUpdateData = {
+      status: 'in_progress',
+      scheduled_date: new Date().toISOString(),
+    };
+    return this.update(itemId, updateData);
+  }
+
+  /**
+   * Get maintenance cost analysis
+   */
+  async getCostAnalysis(): Promise<ApiResponse<{
+    total_estimated: number;
+    total_actual: number;
+    variance: number;
+    variance_percent: number;
+    by_vehicle: Record<string, { estimated: number; actual: number }>;
+  }>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/analytics/costs`;
+      const response = await fetch(url);
+      return this.handleResponse(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  /**
+   * Search maintenance items
+   */
+  async search(query: string): Promise<ApiResponse<MaintenanceItem[]>> {
+    try {
+      const url = new URL(`${this.baseUrl}${this.endpoint}/search`);
+      url.searchParams.append('q', query);
+      const response = await fetch(url.toString());
+      
+      const result = await this.handleResponse<PaginatedMaintenanceResponse>(response);
+      if (result.success && result.data) {
+        return {
+          data: result.data.items,
+          success: true
+        };
+      }
+      return { data: null as any, success: false, error: result.error };
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  // ==================== Technician Methods ====================
+  async getTechnicians(): Promise<ApiResponse<Technician[]>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/technicians`;
+      const response = await fetch(url);
+      return this.handleResponse<Technician[]>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async createTechnician(data: TechnicianCreateData): Promise<ApiResponse<Technician>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/technicians`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return this.handleResponse<Technician>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async updateTechnician(id: string, data: TechnicianUpdateData): Promise<ApiResponse<Technician>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/technicians/${id}`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return this.handleResponse<Technician>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async deleteTechnician(id: string): Promise<ApiResponse<void>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/technicians/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+      });
+      return this.handleResponse<void>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  // ==================== Part Methods ====================
+  async getParts(query?: string): Promise<ApiResponse<Part[]>> {
+    try {
+      const url = new URL(`${this.baseUrl}${this.endpoint}/parts`);
+      if (query) url.searchParams.append('q', query);
+      const response = await fetch(url.toString());
+      return this.handleResponse<Part[]>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async createPart(data: PartCreateData): Promise<ApiResponse<Part>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/parts`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return this.handleResponse<Part>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async updatePart(id: string, data: PartUpdateData): Promise<ApiResponse<Part>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/parts/${id}`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return this.handleResponse<Part>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async deletePart(id: string): Promise<ApiResponse<void>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/parts/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+      });
+      return this.handleResponse<void>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  // ==================== Recurring Schedule Methods ====================
+  async getRecurringSchedules(): Promise<ApiResponse<RecurringSchedule[]>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/recurring-schedules`;
+      const response = await fetch(url);
+      return this.handleResponse<RecurringSchedule[]>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async createRecurringSchedule(data: RecurringScheduleCreateData): Promise<ApiResponse<RecurringSchedule>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/recurring-schedules`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return this.handleResponse<RecurringSchedule>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async updateRecurringSchedule(id: string, data: RecurringScheduleUpdateData): Promise<ApiResponse<RecurringSchedule>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/recurring-schedules/${id}`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      return this.handleResponse<RecurringSchedule>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  async deleteRecurringSchedule(id: string): Promise<ApiResponse<void>> {
+    try {
+      const url = `${this.baseUrl}${this.endpoint}/recurring-schedules/${id}`;
+      const response = await fetch(url, {
+        method: 'DELETE',
+      });
+      return this.handleResponse<void>(response);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+
+  // Helper methods to reduce redundancy
+  private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
       return {
         data: null as any,
         success: false,
-        error: message,
+        error: errorData.message || `HTTP Error: ${response.status}`,
       };
     }
+
+    const data = await response.json();
+    return {
+      data,
+      success: true,
+    };
+  }
+
+  private handleError<T>(error: unknown): ApiResponse<T> {
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred';
+    return {
+      data: null as T,
+      success: false,
+      error: message,
+    };
   }
 }
 
 export const maintenanceService = new MaintenanceService();
-

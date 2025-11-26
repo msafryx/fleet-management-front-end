@@ -1,60 +1,143 @@
 /**
  * Driver API Service
  * 
- * Handles all driver-related API calls.
- * Currently returns mock data, but structured for easy backend integration.
+ * Handles all driver-related API calls to the Java Spring Boot backend (port 6001).
+ * Implements full CRUD operations for drivers with backend integration.
  */
 
 import type { Driver, DriverFormState } from '@/types';
-import { baseApi, type ApiResponse } from './baseApi';
+import { driverApi, type ApiResponse } from './baseApi';
 
 class DriverService {
-  private readonly endpoint = '/drivers';
+  private readonly endpoint = '/api/drivers';
 
+  /**
+   * Get all drivers
+   * GET /api/drivers/list
+   */
   async getAll(): Promise<ApiResponse<Driver[]>> {
-    // return baseApi.get<Driver[]>(this.endpoint);
-    return Promise.resolve({ data: [], success: true });
+    try {
+      return await driverApi.get<Driver[]>(`${this.endpoint}/list`);
+    } catch (error) {
+      console.error('Failed to fetch drivers:', error);
+      return {
+        data: [] as Driver[],
+        success: false,
+        error: 'Failed to fetch drivers'
+      };
+    }
   }
 
-  async getById(id: string): Promise<ApiResponse<Driver>> {
-    // return baseApi.get<Driver>(`${this.endpoint}/${id}`);
-    return Promise.resolve({ data: {} as Driver, success: true });
+  /**
+   * Get driver by ID
+   * GET /api/drivers/{id}
+   */
+  async getById(id: number | string): Promise<ApiResponse<Driver>> {
+    try {
+      return await driverApi.get<Driver>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error(`Failed to fetch driver ${id}:`, error);
+      return {
+        data: {} as Driver,
+        success: false,
+        error: 'Failed to fetch driver'
+      };
+    }
   }
 
-  async create(driverData: DriverFormState): Promise<ApiResponse<Driver>> {
-    // return baseApi.post<Driver>(this.endpoint, driverData);
-    return Promise.resolve({ 
-      data: {} as Driver, 
-      success: true,
-      message: 'Driver created successfully'
-    });
+  /**
+   * Create new driver
+   * POST /api/drivers
+   */
+  async create(driverData: DriverFormState): Promise<ApiResponse<string>> {
+    try {
+      // Transform frontend data to backend DTO format
+      const backendData = {
+        fullName: driverData.fullName || driverData.name,
+        email: driverData.email,
+        phone: driverData.phone,
+        licenseNumber: driverData.licenseNumber,
+        expiryDate: driverData.expiryDate || driverData.licenseExpiry
+      };
+      
+      return await driverApi.post<string>(this.endpoint, backendData);
+    } catch (error) {
+      console.error('Failed to create driver:', error);
+      return {
+        data: '' as string,
+        success: false,
+        error: 'Failed to create driver'
+      };
+    }
   }
 
-  async update(id: string, driverData: Partial<Driver>): Promise<ApiResponse<Driver>> {
-    // return baseApi.put<Driver>(`${this.endpoint}/${id}`, driverData);
-    return Promise.resolve({ 
-      data: {} as Driver, 
-      success: true,
-      message: 'Driver updated successfully'
-    });
+  /**
+   * Update driver
+   * PUT /api/drivers/{id}
+   */
+  async update(id: number | string, driverData: Partial<Driver>): Promise<ApiResponse<Driver>> {
+    try {
+      // Transform frontend data to backend DTO format
+      const backendData = {
+        fullName: driverData.fullName || driverData.name,
+        email: driverData.email,
+        phone: driverData.phone,
+        licenseNumber: driverData.licenseNumber,
+        expiryDate: driverData.expiryDate || driverData.licenseExpiry
+      };
+      
+      return await driverApi.put<Driver>(`${this.endpoint}/${id}`, backendData);
+    } catch (error) {
+      console.error(`Failed to update driver ${id}:`, error);
+      return {
+        data: {} as Driver,
+        success: false,
+        error: 'Failed to update driver'
+      };
+    }
   }
 
-  async delete(id: string): Promise<ApiResponse<void>> {
-    // return baseApi.delete<void>(`${this.endpoint}/${id}`);
-    return Promise.resolve({ 
-      data: undefined as void, 
-      success: true,
-      message: 'Driver deleted successfully'
-    });
+  /**
+   * Delete driver
+   * DELETE /api/drivers/{id}
+   */
+  async delete(id: number | string): Promise<ApiResponse<string>> {
+    try {
+      return await driverApi.delete<string>(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error(`Failed to delete driver ${id}:`, error);
+      return {
+        data: '' as string,
+        success: false,
+        error: 'Failed to delete driver'
+      };
+    }
   }
 
-  async assignVehicle(driverId: string, vehicleId: string): Promise<ApiResponse<Driver>> {
-    // return baseApi.patch<Driver>(`${this.endpoint}/${driverId}/assign-vehicle`, { vehicleId });
-    return Promise.resolve({ 
-      data: {} as Driver, 
-      success: true,
-      message: 'Vehicle assigned successfully'
-    });
+  /**
+   * Transform backend driver data to frontend format
+   */
+  transformDriver(backendDriver: Driver): Driver {
+    return {
+      ...backendDriver,
+      id: backendDriver.driverId?.toString() || backendDriver.id || '',
+      name: backendDriver.fullName,
+      licenseExpiry: backendDriver.expiryDate || backendDriver.licenseExpiry || '',
+      // Preserve frontend-only fields if they exist
+      status: backendDriver.status || 'off-duty',
+      vehicle: backendDriver.vehicle || 'Unassigned',
+      rating: backendDriver.rating || 0,
+      totalTrips: backendDriver.totalTrips || 0,
+      hoursThisWeek: backendDriver.hoursThisWeek || 0,
+      joinDate: backendDriver.joinDate || new Date().toISOString().split('T')[0]
+    };
+  }
+
+  /**
+   * Transform array of backend drivers to frontend format
+   */
+  transformDrivers(backendDrivers: Driver[]): Driver[] {
+    return backendDrivers.map(driver => this.transformDriver(driver));
   }
 }
 

@@ -1,5 +1,5 @@
 // Performance optimization: Added useMemo and useCallback for expensive operations
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -8,6 +8,10 @@ import { Label } from './ui/label';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Loader } from './ui/loader';
+import { Alert, AlertDescription } from './ui/alert';
+import { driverService } from '@/services/api';
+import type { Driver, DriverFormState } from '@/types';
 import { 
   Search, 
   Plus, 
@@ -17,23 +21,9 @@ import {
   CheckCircle,
   Clock,
   UserX,
-  Star
+  Star,
+  AlertCircle
 } from 'lucide-react';
-
-interface Driver {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  status: string;
-  vehicle: string;
-  licenseExpiry: string;
-  rating: number;
-  totalTrips: number;
-  hoursThisWeek: number;
-  joinDate: string;
-  licenseNumber?: string;
-}
 
 export function DriverManagement() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -42,102 +32,73 @@ export function DriverManagement() {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
   const [driverToAssign, setDriverToAssign] = useState<Driver | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const [newDriver, setNewDriver] = useState({
-    name: '',
+  const [newDriver, setNewDriver] = useState<DriverFormState>({
+    fullName: '',
     email: '',
     phone: '',
     licenseNumber: '',
-    licenseExpiry: '',
+    expiryDate: '',
   });
 
-  const [drivers, setDrivers] = useState<Driver[]>([
-    {
-      id: 'D001',
-      name: 'John Smith',
-      email: 'john.smith@company.com',
-      phone: '+1 (555) 123-4567',
-      status: 'active',
-      vehicle: 'VH-0123',
-      licenseExpiry: '2025-06-15',
-      rating: 4.8,
-      totalTrips: 1247,
-      hoursThisWeek: 38,
-      joinDate: '2022-03-15',
-      licenseNumber: 'DL123456789'
-    },
-    {
-      id: 'D002',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@company.com',
-      phone: '+1 (555) 234-5678',
-      status: 'off-duty',
-      vehicle: 'VH-0789',
-      licenseExpiry: '2024-11-22',
-      rating: 4.9,
-      totalTrips: 892,
-      hoursThisWeek: 0,
-      joinDate: '2021-08-10',
-      licenseNumber: 'DL987654321'
-    },
-    {
-      id: 'D003',
-      name: 'Mike Wilson',
-      email: 'mike.wilson@company.com',
-      phone: '+1 (555) 345-6789',
-      status: 'active',
-      vehicle: 'VH-0321',
-      licenseExpiry: '2025-02-08',
-      rating: 4.6,
-      totalTrips: 2156,
-      hoursThisWeek: 42,
-      joinDate: '2020-11-05',
-      licenseNumber: 'DL456789123'
-    },
-    {
-      id: 'D004',
-      name: 'Emma Davis',
-      email: 'emma.davis@company.com',
-      phone: '+1 (555) 456-7890',
-      status: 'unavailable',
-      vehicle: 'Unassigned',
-      licenseExpiry: '2024-09-30',
-      rating: 4.7,
-      totalTrips: 634,
-      hoursThisWeek: 0,
-      joinDate: '2023-01-20',
-      licenseNumber: 'DL789123456'
-    }
-  ]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
 
   const availableVehicles = ['VH-0123', 'VH-0456', 'VH-0789', 'VH-0321', 'VH-0555', 'VH-0666'];
   const [selectedVehicle, setSelectedVehicle] = useState('');
 
-  const handleAddDriver = () => {
-    const driver: Driver = {
-      id: `D${String(drivers.length + 1).padStart(3, '0')}`,
-      name: newDriver.name,
-      email: newDriver.email,
-      phone: newDriver.phone,
-      status: 'off-duty',
-      vehicle: 'Unassigned',
-      licenseExpiry: newDriver.licenseExpiry,
-      rating: 0,
-      totalTrips: 0,
-      hoursThisWeek: 0,
-      joinDate: new Date().toISOString().split('T')[0],
-      licenseNumber: newDriver.licenseNumber,
-    };
-    
-    setDrivers([...drivers, driver]);
-    setIsAddDialogOpen(false);
-    setNewDriver({
-      name: '',
-      email: '',
-      phone: '',
-      licenseNumber: '',
-      licenseExpiry: '',
-    });
+  // Fetch drivers on component mount
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
+
+  const fetchDrivers = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await driverService.getAll();
+      if (response.success && response.data) {
+        // Transform backend data to frontend format
+        const transformedDrivers = driverService.transformDrivers(response.data);
+        setDrivers(transformedDrivers);
+      } else {
+        setError(response.error || 'Failed to fetch drivers');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred while fetching drivers');
+      console.error('Error fetching drivers:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddDriver = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const response = await driverService.create(newDriver);
+      if (response.success) {
+        // Refresh driver list
+        await fetchDrivers();
+        setIsAddDialogOpen(false);
+        setNewDriver({
+          fullName: '',
+          email: '',
+          phone: '',
+          licenseNumber: '',
+          expiryDate: '',
+        });
+      } else {
+        setError(response.error || 'Failed to create driver');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred while creating driver');
+      console.error('Error creating driver:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleViewProfile = (driver: Driver) => {
@@ -209,6 +170,14 @@ export function DriverManagement() {
         </Button>
       </div>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Search */}
       <Card>
         <CardContent className="p-4">
@@ -224,9 +193,36 @@ export function DriverManagement() {
         </CardContent>
       </Card>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader />
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && filteredDrivers.length === 0 && (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <UserX className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No drivers found</h3>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery ? 'Try adjusting your search criteria' : 'Get started by adding your first driver'}
+            </p>
+            {!searchQuery && (
+              <Button onClick={() => setIsAddDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Driver
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Driver List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredDrivers.map((driver) => (
+      {!isLoading && filteredDrivers.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredDrivers.map((driver) => (
           <Card key={driver.id} className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
@@ -306,8 +302,9 @@ export function DriverManagement() {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Add Driver Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -323,9 +320,10 @@ export function DriverManagement() {
               <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
-                value={newDriver.name}
-                onChange={(e) => setNewDriver({ ...newDriver, name: e.target.value })}
+                value={newDriver.fullName}
+                onChange={(e) => setNewDriver({ ...newDriver, fullName: e.target.value })}
                 placeholder="John Doe"
+                disabled={isSubmitting}
               />
             </div>
             <div className="space-y-2">
@@ -336,6 +334,7 @@ export function DriverManagement() {
                 value={newDriver.email}
                 onChange={(e) => setNewDriver({ ...newDriver, email: e.target.value })}
                 placeholder="john.doe@company.com"
+                disabled={isSubmitting}
               />
             </div>
             <div className="space-y-2">
@@ -345,6 +344,7 @@ export function DriverManagement() {
                 value={newDriver.phone}
                 onChange={(e) => setNewDriver({ ...newDriver, phone: e.target.value })}
                 placeholder="+1 (555) 123-4567"
+                disabled={isSubmitting}
               />
             </div>
             <div className="space-y-2">
@@ -354,21 +354,34 @@ export function DriverManagement() {
                 value={newDriver.licenseNumber}
                 onChange={(e) => setNewDriver({ ...newDriver, licenseNumber: e.target.value })}
                 placeholder="DL123456789"
+                disabled={isSubmitting}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="licenseExpiry">License Expiry Date</Label>
+              <Label htmlFor="expiryDate">License Expiry Date</Label>
               <Input
-                id="licenseExpiry"
+                id="expiryDate"
                 type="date"
-                value={newDriver.licenseExpiry}
-                onChange={(e) => setNewDriver({ ...newDriver, licenseExpiry: e.target.value })}
+                value={newDriver.expiryDate}
+                onChange={(e) => setNewDriver({ ...newDriver, expiryDate: e.target.value })}
+                disabled={isSubmitting}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleAddDriver}>Add Driver</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAddDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleAddDriver}
+              disabled={isSubmitting || !newDriver.fullName || !newDriver.email || !newDriver.phone || !newDriver.licenseNumber || !newDriver.expiryDate}
+            >
+              {isSubmitting ? 'Adding...' : 'Add Driver'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

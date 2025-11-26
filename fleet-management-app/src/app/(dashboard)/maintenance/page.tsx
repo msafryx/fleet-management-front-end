@@ -4,14 +4,14 @@
 
 import dynamic from 'next/dynamic';
 
-const MaintenanceManagement = dynamic(() => 
-  import('@/components/MaintenanceManagement').then(mod => ({ default: mod.MaintenanceManagement })),
+const MaintenanceDashboard = dynamic(() => 
+  import('@/components/MaintenanceDashboard').then(mod => ({ default: mod.MaintenanceDashboard })),
   {
-    loading: () => <div className="flex items-center justify-center h-screen">Loading maintenance data...</div>,
+    loading: () => <div className="flex items-center justify-center h-screen">Loading maintenance dashboard...</div>,
   }
 );
 
 export default function MaintenancePage() {
-  return <MaintenanceManagement />;
+  return <MaintenanceDashboard />;
 }
 

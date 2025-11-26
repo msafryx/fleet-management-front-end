@@ -53,22 +53,59 @@ export type FuelType = 'Diesel' | 'Gasoline' | 'Electric' | 'Hybrid';
 // DRIVER TYPES
 // ============================================================================
 
+// Backend DTO mapping
 export interface Driver {
-  id: string;
-  name: string;
+  driverId?: number; // Backend uses Long
+  id?: string; // Frontend display ID
+  fullName: string; // Backend field
+  name?: string; // Alias for fullName
   email: string;
   phone: string;
-  status: DriverStatus;
-  vehicle: string;
-  licenseExpiry: string;
-  rating: number;
-  totalTrips: number;
-  hoursThisWeek: number;
-  joinDate: string;
-  licenseNumber?: string;
+  licenseNumber: string;
+  expiryDate?: string; // Backend uses Date, ISO string in JSON
+  licenseExpiry?: string; // Alias for expiryDate
+  status?: DriverStatus; // Frontend only
+  vehicle?: string; // Frontend only
+  rating?: number; // Frontend only
+  totalTrips?: number; // Frontend only
+  hoursThisWeek?: number; // Frontend only
+  joinDate?: string; // Frontend only
 }
 
 export type DriverStatus = 'active' | 'off-duty' | 'unavailable';
+
+// Driver Performance Form (backend: Form entity)
+export interface DriverForm {
+  formId?: number;
+  driverId: number;
+  driverName: string;
+  vehicleNumber: string;
+  score: number;
+  fuelEfficiency: number;
+  onTimeRate: number;
+  vehicleId?: number;
+}
+
+// Driver Schedule (backend: Schedule entity)
+export interface DriverSchedule {
+  scheduleId?: number;
+  driverId: string;
+  route: string;
+  vehicle?: DriverScheduleVehicle;
+  status: ScheduleStatus;
+  startTime?: string; // ISO 8601 datetime string
+  endTime?: string; // ISO 8601 datetime string
+}
+
+export interface DriverScheduleVehicle {
+  vehicleId?: number;
+  make?: string;
+  model?: string;
+  year?: number;
+  licensePlate?: string;
+}
+
+export type ScheduleStatus = 'pending' | 'active' | 'completed' | 'cancelled';
 
 // ============================================================================
 // TRIP TYPES
@@ -159,11 +196,45 @@ export interface VehicleFormState extends Record<string, unknown> {
 }
 
 export interface DriverFormState {
-  name: string;
+  fullName: string;
+  name?: string; // Alias
   email: string;
   phone: string;
   licenseNumber: string;
-  licenseExpiry: string;
+  expiryDate: string;
+  licenseExpiry?: string; // Alias
+}
+
+export interface DriverFormFormState {
+  driverId: number;
+  driverName: string;
+  vehicleNumber: string;
+  score: number;
+  fuelEfficiency: number;
+  onTimeRate: number;
+  vehicleId?: number;
+}
+
+export interface DriverScheduleFormState {
+  driverId: string;
+  route: string;
+  vehicle?: DriverScheduleVehicle;
+  status: ScheduleStatus;
+  startTime?: string;
+  endTime?: string;
+}
+
+export interface PerformanceTrends {
+  formIds: number[];
+  scores: number[];
+  fuelEfficiencies: number[];
+  onTimeRates: number[];
+  averages: {
+    score: number;
+    fuelEfficiency: number;
+    onTimeRate: number;
+  };
+  totalForms: number;
 }
 
 export interface UserFormState {

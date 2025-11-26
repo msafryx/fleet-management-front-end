@@ -9,7 +9,12 @@ export type { ApiResponse, ApiError } from './baseApi';
 
 export { vehicleService } from './vehicleService';
 export { driverService } from './driverService';
+export { formService } from './formService';
+export { scheduleService } from './scheduleService';
 export { maintenanceService } from './maintenanceService';
+export { reportsService } from './reportsService';
+export { vehicleStatusService } from './vehicleStatusService';
+export { vehicleBatchService } from './vehicleBatchService';
 export type { 
   MaintenanceSummary, 
   PaginatedMaintenanceResponse, 
@@ -17,10 +22,22 @@ export type {
   MaintenanceCreateData,
   MaintenanceUpdateData 
 } from './maintenanceService';
-
-// TODO: Add more services as needed:
-// export { tripService } from './tripService';
-// export { fuelService } from './fuelService';
-// export { userService } from './userService';
-// export { analyticsService } from './analyticsService';
+export type {
+  FleetPerformanceReport,
+  FuelConsumptionReport,
+  MaintenanceSummaryReport,
+  FleetSummaryReport
+} from './reportsService';
+export type {
+  VehicleStatusHistory,
+  AssignDriverData,
+  UnassignDriverData
+} from './vehicleStatusService';
+export type {
+  BatchOperationResponse,
+  BatchUpdateStatusData,
+  BatchUpdateFuelData,
+  BatchScheduleMaintenanceData,
+  BatchDeleteData
+} from './vehicleBatchService';
 

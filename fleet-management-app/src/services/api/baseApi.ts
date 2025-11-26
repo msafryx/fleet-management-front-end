@@ -25,6 +25,7 @@ export interface ApiError {
 export const API_CONFIG = {
   VEHICLE_SERVICE_URL: process.env.NEXT_PUBLIC_VEHICLE_SERVICE_URL || 'http://localhost:7001',
   MAINTENANCE_SERVICE_URL: process.env.NEXT_PUBLIC_MAINTENANCE_SERVICE_URL || 'http://localhost:5001',
+  DRIVER_SERVICE_URL: process.env.NEXT_PUBLIC_DRIVER_SERVICE_URL || 'http://localhost:6001',
   TIMEOUT: 30000,
   HEADERS: {
     'Content-Type': 'application/json'
@@ -186,4 +187,5 @@ class BaseApi {
 export const baseApi = new BaseApi();
 export const vehicleApi = new BaseApi(API_CONFIG.VEHICLE_SERVICE_URL);
 export const maintenanceApi = new BaseApi(API_CONFIG.MAINTENANCE_SERVICE_URL);
+export const driverApi = new BaseApi(API_CONFIG.DRIVER_SERVICE_URL);
 
