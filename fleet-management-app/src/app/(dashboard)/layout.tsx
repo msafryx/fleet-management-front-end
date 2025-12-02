@@ -53,6 +53,7 @@ export default function DashboardLayout({
       'reports': '/reports',
       'users': '/users',
       'settings': '/settings',
+      'developer-testing': '/developer-testing',
     };
     
     const route = routeMap[section];

@@ -14,13 +14,10 @@ import {
   DollarSign, 
   TrendingUp,
   Activity,
-  ChevronDown,
-  ChevronUp,
   RefreshCw,
   AlertCircle,
   Fuel
 } from 'lucide-react';
-import { ConnectionTester } from './ConnectionTester';
 import { vehicleService } from '@/services/api';
 
 interface VehicleStatistics {
@@ -36,7 +33,6 @@ interface VehicleStatistics {
 }
 
 export function DashboardOverview() {
-  const [showConnectionTester, setShowConnectionTester] = useState(false);
   const [stats, setStats] = useState<VehicleStatistics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,23 +128,6 @@ export function DashboardOverview() {
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowConnectionTester(!showConnectionTester)}
-          >
-            {showConnectionTester ? (
-              <>
-                <ChevronUp className="h-4 w-4 mr-2" />
-                Hide Connection Test
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-4 w-4 mr-2" />
-                Test Backend Connection
-              </>
-            )}
-          </Button>
           {!isLoading && stats && (
             <Badge variant="default" className="gap-1">
               <Activity className="h-3 w-3" />
@@ -164,13 +143,6 @@ export function DashboardOverview() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      )}
-
-      {/* Connection Tester */}
-      {showConnectionTester && (
-        <div className="animate-in slide-in-from-top">
-          <ConnectionTester />
-        </div>
       )}
 
       {/* Metrics Grid */}

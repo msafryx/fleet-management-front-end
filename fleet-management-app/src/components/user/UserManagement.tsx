@@ -1,6 +1,7 @@
 // Performance optimization: Added useMemo and useCallback for expensive calculations
 import React, { useState, useMemo, useCallback } from 'react';
-import { Plus, Search, Filter, MoreVertical, UserPlus, Mail, Shield, CheckCircle, XCircle, Edit, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Search, Filter, MoreVertical, UserPlus, Mail, Shield, CheckCircle, XCircle, Edit, Trash2, Terminal } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -183,14 +184,21 @@ export function UserManagement() {
           <h2 className="text-2xl font-semibold">User Management</h2>
           <p className="text-muted-foreground">Manage system users, roles, and permissions</p>
         </div>
-        <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add User
+        <div className="flex gap-2">
+          <Link href="/developer-testing">
+            <Button variant="outline">
+              <Terminal className="h-4 w-4 mr-2" />
+              Developer Testing
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          </Link>
+          <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Add User
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
               <DialogTitle>Create New User</DialogTitle>
               <DialogDescription>
@@ -270,6 +278,7 @@ export function UserManagement() {
           </DialogContent>
         </Dialog>
       </div>
+    </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
