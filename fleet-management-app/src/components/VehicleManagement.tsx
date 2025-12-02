@@ -192,8 +192,8 @@ export function VehicleManagement() {
                   <p className="font-medium">{vehicle.license}</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Driver:</span>
-                  <p className="font-medium">{vehicle.driver}</p>
+                  <span className="text-muted-foreground">Driver ID:</span>
+                  <p className="font-medium">{vehicle.driverId || 'Unassigned'}</p>
                 </div>
               </div>
 
