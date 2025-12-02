@@ -20,7 +20,7 @@ export interface BackendVehicle {
   currentMileage: number;
   fuelLevel: number;
   currentLocation?: string;
-  currentDriver?: string;
+  currentDriverId?: string;
   status: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
@@ -50,7 +50,7 @@ export interface BackendUpdateVehicleRequest {
   currentMileage?: number;
   fuelLevel?: number;
   currentLocation?: string;
-  currentDriver?: string;
+  currentDriverId?: string;
   status?: number;
   lastMaintenanceDate?: string;
   nextMaintenanceDate?: string;
@@ -82,7 +82,7 @@ export function transformBackendVehicle(backendVehicle: BackendVehicle): Vehicle
     year: backendVehicle.year,
     license: backendVehicle.licensePlate,
     status: (INT_TO_STATUS[backendVehicle.status] || 'idle') as Vehicle['status'],
-    driver: backendVehicle.currentDriver || 'Unassigned',
+    driverId: backendVehicle.currentDriverId, // Changed from driver name to driverId
     location: backendVehicle.currentLocation || 'Unknown',
     fuelLevel: Math.round(backendVehicle.fuelLevel),
     lastMaintenance: backendVehicle.lastMaintenanceDate 
@@ -127,7 +127,7 @@ export function transformToUpdateRequest(vehicle: Partial<Vehicle>): BackendUpda
   if (vehicle.mileage !== undefined) request.currentMileage = vehicle.mileage;
   if (vehicle.fuelLevel !== undefined) request.fuelLevel = vehicle.fuelLevel;
   if (vehicle.location) request.currentLocation = vehicle.location;
-  if (vehicle.driver) request.currentDriver = vehicle.driver;
+  if (vehicle.driverId) request.currentDriverId = vehicle.driverId;
   if (vehicle.status) request.status = STATUS_TO_INT[vehicle.status];
   if (vehicle.lastMaintenance) request.lastMaintenanceDate = vehicle.lastMaintenance;
   if (vehicle.nextMaintenance) request.nextMaintenanceDate = vehicle.nextMaintenance;

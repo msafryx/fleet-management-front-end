@@ -36,7 +36,7 @@ export interface Vehicle extends Record<string, unknown> {
   year: number;
   license: string;
   status: VehicleStatus;
-  driver: string;
+  driverId?: string; // Changed from 'driver' to 'driverId'
   location: string;
   fuelLevel: number;
   lastMaintenance: string;
@@ -91,12 +91,13 @@ export interface DriverSchedule {
   scheduleId?: number;
   driverId: string;
   route: string;
-  vehicle?: DriverScheduleVehicle;
+  vehicleId?: string; // Changed from 'vehicle' object to 'vehicleId' string
   status: ScheduleStatus;
   startTime?: string; // ISO 8601 datetime string
   endTime?: string; // ISO 8601 datetime string
 }
 
+/* Removing redundant DriverScheduleVehicle interface
 export interface DriverScheduleVehicle {
   vehicleId?: number;
   make?: string;
@@ -104,6 +105,7 @@ export interface DriverScheduleVehicle {
   year?: number;
   licensePlate?: string;
 }
+*/
 
 export type ScheduleStatus = 'pending' | 'active' | 'completed' | 'cancelled';
 
@@ -218,7 +220,7 @@ export interface DriverFormFormState {
 export interface DriverScheduleFormState {
   driverId: string;
   route: string;
-  vehicle?: DriverScheduleVehicle;
+  vehicleId?: string; // Changed from 'vehicle' object
   status: ScheduleStatus;
   startTime?: string;
   endTime?: string;
