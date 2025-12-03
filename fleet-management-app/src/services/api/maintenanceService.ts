@@ -240,7 +240,7 @@ class MaintenanceService {
         params.append('assignedTo', filters.assignedTo);
       }
 
-      const url = `${this.baseUrl}${this.endpoint}?${params.toString()}`;
+      const url = `${this.baseUrl}${this.endpoint}/?${params.toString()}`;
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -278,7 +278,7 @@ class MaintenanceService {
    */
   async create(data: MaintenanceCreateData): Promise<ApiResponse<MaintenanceItem>> {
     try {
-      const url = `${this.baseUrl}${this.endpoint}`;
+      const url = `${this.baseUrl}${this.endpoint}/`;
       const response = await fetch(url, {
         method: 'POST',
         headers: {

@@ -200,7 +200,7 @@ export function MaintenanceDashboard() {
           return (
             <Card 
               key={module.title}
-              className="cursor-pointer hover:shadow-lg transition-all hover:scale-105"
+              className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 hover:border-primary"
               onClick={() => router.push(module.href)}
             >
               <CardHeader>
