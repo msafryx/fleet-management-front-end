@@ -388,7 +388,7 @@ export function VehicleManagement() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Current Driver</p>
-                  <p className="font-medium">{detailsDialog.data.driver}</p>
+                  <p className="font-medium">{detailsDialog.data.driverId || 'Unassigned'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Current Location</p>
