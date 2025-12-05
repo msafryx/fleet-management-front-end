@@ -131,13 +131,13 @@ class DriverService {
     return {
       ...backendDriver,
       id: backendDriver.driverId?.toString() || backendDriver.id || '',
-      name: backendDriver.fullName,
+      name: backendDriver.fullName || backendDriver.name || 'Unknown Driver',
       licenseExpiry: backendDriver.expiryDate || backendDriver.licenseExpiry || '',
       // Preserve frontend-only fields if they exist
       status: backendDriver.status || 'off-duty',
       vehicle: backendDriver.vehicle || 'Unassigned',
-      rating: backendDriver.rating || 0,
-      totalTrips: backendDriver.totalTrips || 0,
+      rating: backendDriver.starRating || backendDriver.rating || 0,
+      totalTrips: backendDriver.tripCount || backendDriver.totalTrips || 0,
       hoursThisWeek: backendDriver.hoursThisWeek || 0,
       joinDate: backendDriver.joinDate || new Date().toISOString().split('T')[0]
     };

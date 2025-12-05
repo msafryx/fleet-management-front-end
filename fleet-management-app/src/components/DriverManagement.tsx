@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Loader } from './ui/loader';
 import { Alert, AlertDescription } from './ui/alert';
+import { useToast } from '@/hooks/use-toast';
 import { driverService } from '@/services/api';
 import type { Driver, DriverFormState } from '@/types';
 import { 
@@ -26,6 +27,7 @@ import {
 } from 'lucide-react';
 
 export function DriverManagement() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
@@ -80,6 +82,10 @@ export function DriverManagement() {
     try {
       const response = await driverService.create(newDriver);
       if (response.success) {
+        toast({
+          title: "Success",
+          description: "Driver added successfully",
+        });
         // Refresh driver list
         await fetchDrivers();
         setIsAddDialogOpen(false);
@@ -91,10 +97,22 @@ export function DriverManagement() {
           expiryDate: '',
         });
       } else {
-        setError(response.error || 'Failed to create driver');
+        const errorMessage = response.error || 'Failed to create driver';
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive"
+        });
       }
     } catch (err) {
-      setError('An unexpected error occurred while creating driver');
+      const errorMessage = 'An unexpected error occurred while creating driver';
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       console.error('Error creating driver:', err);
     } finally {
       setIsSubmitting(false);

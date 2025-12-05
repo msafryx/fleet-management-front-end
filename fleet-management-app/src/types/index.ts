@@ -64,6 +64,8 @@ export interface Driver {
   licenseNumber: string;
   expiryDate?: string; // Backend uses Date, ISO string in JSON
   licenseExpiry?: string; // Alias for expiryDate
+  starRating?: number; // Backend field
+  tripCount?: number; // Backend field
   status?: DriverStatus; // Frontend only
   vehicle?: string; // Frontend only
   rating?: number; // Frontend only
