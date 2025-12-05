@@ -159,7 +159,7 @@ class BaseApi {
       return {
         data: null as T,
         success: false,
-        error: errorData.message || `HTTP Error: ${response.status}`
+        error: errorData.message || errorData.error || `HTTP Error: ${response.status}`
       };
     }
 

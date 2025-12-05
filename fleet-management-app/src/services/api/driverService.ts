@@ -60,7 +60,13 @@ class DriverService {
         expiryDate: driverData.expiryDate || driverData.licenseExpiry
       };
       
-      return await driverApi.post<string>(this.endpoint, backendData);
+      const response = await driverApi.post<{ message: string }>(this.endpoint, backendData);
+      
+      // Map the object response back to a string for the frontend
+      return {
+        ...response,
+        data: response.data?.message || 'Driver created successfully'
+      };
     } catch (error) {
       console.error('Failed to create driver:', error);
       return {
@@ -103,7 +109,11 @@ class DriverService {
    */
   async delete(id: number | string): Promise<ApiResponse<string>> {
     try {
-      return await driverApi.delete<string>(`${this.endpoint}/${id}`);
+      const response = await driverApi.delete<{ message: string }>(`${this.endpoint}/${id}`);
+      return {
+        ...response,
+        data: response.data?.message || 'Driver deleted successfully'
+      };
     } catch (error) {
       console.error(`Failed to delete driver ${id}:`, error);
       return {
