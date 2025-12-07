@@ -5,8 +5,15 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
-import { formService } from '@/services/api';
-import type { PerformanceTrends } from '@/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
+import { formService, driverService } from '@/services/api';
+import type { PerformanceTrends, Driver } from '@/types';
 import { TrendingUp, Search, AlertCircle, BarChart3, Fuel, Clock, Award, Loader2 } from 'lucide-react';
 
 export function PerformanceTrendsChart() {
@@ -15,6 +22,25 @@ export function PerformanceTrendsChart() {
   const [trends, setTrends] = useState<PerformanceTrends | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [isLoadingDrivers, setIsLoadingDrivers] = useState(false);
+
+  useEffect(() => {
+    const fetchDrivers = async () => {
+      setIsLoadingDrivers(true);
+      try {
+        const response = await driverService.getAll();
+        if (response.success && response.data) {
+          setDrivers(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch drivers:', error);
+      } finally {
+        setIsLoadingDrivers(false);
+      }
+    };
+    fetchDrivers();
+  }, []);
 
   const handleFetchTrends = async () => {
     if (!driverId) {
@@ -87,14 +113,27 @@ export function PerformanceTrendsChart() {
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="trendDriverId">Driver ID *</Label>
-            <Input
-              id="trendDriverId"
-              type="number"
-              placeholder="Enter driver ID"
+            <Label htmlFor="trendDriverId">Select Driver *</Label>
+            <Select
               value={driverId}
-              onChange={(e) => setDriverId(e.target.value)}
-            />
+              onValueChange={setDriverId}
+              disabled={isLoadingDrivers}
+            >
+              <SelectTrigger id="trendDriverId">
+                <SelectValue placeholder={isLoadingDrivers ? "Loading drivers..." : "Select a driver"} />
+              </SelectTrigger>
+              <SelectContent>
+                {drivers.map((driver) => {
+                  const value = driver.id || driver.driverId?.toString();
+                  if (!value) return null;
+                  return (
+                    <SelectItem key={value} value={value}>
+                      {driver.name || driver.fullName || `Driver #${value}`}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
