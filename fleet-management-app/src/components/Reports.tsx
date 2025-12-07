@@ -97,6 +97,7 @@ export function Reports() {
           title: "Report Generated",
           description: `${response.data.reportName} has been generated successfully.`,
         });
+        downloadReport(response.data.id);
         fetchRecentReports(); // Refresh list
       } else {
         toast({
