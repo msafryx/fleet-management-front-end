@@ -28,6 +28,16 @@ pipeline {
             }
         }
 
+       stage('Security Scan') {
+    	   steps {
+                sh """
+                echo "🔍 Running Trivy vulnerability scan..."
+                trivy image --exit-code 1 --severity CRITICAL,HIGH $DOCKER_IMAGE:$BUILD_NUMBER
+                """
+            }
+         }
+
+
         stage('Login & Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
