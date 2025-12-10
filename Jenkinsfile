@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "muhammedzafry10/fleet-management-front-end"  // 🔹 change this
+        DOCKER_IMAGE = "muhammedsafry/fleet-management-front-end"  // 🔹 change this
     }
 
     stages {
