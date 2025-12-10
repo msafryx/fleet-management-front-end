@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE           = "muhammedsafry/fleet-management-front-end"
         GITOPS_REPO            = "https://github.com/msafryx/fleet-gitops.git"
-        GITOPS_DEPLOYMENT_PATH = "services/frontend/deployment.yaml"
+        GITOPS_DEPLOYMENT_PATH = "frontend/staging/deployment.yaml"
     }
 
     stages {
