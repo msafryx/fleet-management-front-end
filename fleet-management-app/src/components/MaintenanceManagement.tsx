@@ -673,7 +673,7 @@ function MaintenanceForm({
             <SelectContent>
               {vehicles.map((vehicle) => (
                 <SelectItem key={vehicle.id} value={vehicle.id}>
-                  {vehicle.make} {vehicle.model} ({vehicle.licensePlate})
+                  {vehicle.make} {vehicle.model} ({vehicle.license})
                 </SelectItem>
               ))}
             </SelectContent>
