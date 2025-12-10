@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "muhammedsafry/fleet-management-front-end"
-        GITOPS_REPO = "https://github.com/msafryx/fleet-gitops.git"   // 🔹 your GitOps repo
-        GITOPS_PATH = "services/frontend/deployment.yaml"              // 🔹 path inside repo
+        DOCKER_IMAGE           = "muhammedsafry/fleet-management-front-end"
+        GITOPS_REPO            = "https://github.com/msafryx/fleet-gitops.git"
+        GITOPS_DEPLOYMENT_PATH = "services/frontend/deployment.yaml"
     }
 
     stages {
@@ -17,7 +17,8 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh 'echo "Run your tests here (npm test / build etc.)"'
+                sh 'echo "Run your tests here (npm test / npm run build etc.)"'
+                // Example:
                 // sh 'npm install'
                 // sh 'npm test || echo "No tests"'
             }
@@ -32,16 +33,16 @@ pipeline {
         stage('Login & Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
+                    credentialsId: 'dockerhub-creds',   // your existing DockerHub creds
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    sh """
+                    echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
                     docker push $DOCKER_IMAGE:$BUILD_NUMBER
                     docker tag $DOCKER_IMAGE:$BUILD_NUMBER $DOCKER_IMAGE:latest
                     docker push $DOCKER_IMAGE:latest
-                    '''
+                    """
                 }
             }
         }
@@ -49,26 +50,29 @@ pipeline {
         stage('Update GitOps Repo') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'gitops-creds',         // 🔹 create this in Jenkins
+                    credentialsId: 'gitops-creds',   // 🔹 you must create this in Jenkins
                     usernameVariable: 'GIT_USER',
                     passwordVariable: 'GIT_PASS'
                 )]) {
-                    sh '''
+                    sh """
+                    set -e
+
+                    # 1. Clone GitOps repo
                     rm -rf fleet-gitops
                     git clone https://$GIT_USER:$GIT_PASS@github.com/msafryx/fleet-gitops.git
-
                     cd fleet-gitops
 
-                    # Update image line in deployment.yaml
-                    sed -i "s|image: .*|image: '''"$DOCKER_IMAGE:$BUILD_NUMBER"'''|" $GITOPS_PATH
+                    # 2. Update deployment.yaml with new image tag
+                    sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${BUILD_NUMBER}|' ${GITOPS_DEPLOYMENT_PATH}
 
+                    # 3. Commit & push
                     git config user.email "jenkins@ci.local"
                     git config user.name "Jenkins CI"
 
-                    git add $GITOPS_PATH
-                    git commit -m "Frontend image updated to $DOCKER_IMAGE:$BUILD_NUMBER (build $BUILD_NUMBER)" || echo "No changes to commit"
-                    git push
-                    '''
+                    git add ${GITOPS_DEPLOYMENT_PATH} || true
+                    git commit -m "frontend image -> ${DOCKER_IMAGE}:${BUILD_NUMBER}" || true
+                    git push || true
+                    """
                 }
             }
         }
