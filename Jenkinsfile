@@ -63,7 +63,7 @@ pipeline {
                     cd fleet-gitops
 
                     # 2. Update deployment.yaml with new image tag
-                   sed -i 's|tag: ".*"|tag: "'"${BUILD_NUMBER}"'"|' frontend/staging/values.yaml
+                   sed -i 's|tag: ".*"|tag: "'"${BUILD_NUMBER}"'"|' frontend/chart/fleet-frontend/values-staging.yaml
 
                     # 3. Commit & push
                     git config user.email "jenkins@ci.local"
