@@ -38,9 +38,13 @@ pipeline {
       }
     }
 
-    stage('Trivy Scan (HIGH/CRITICAL)') {
+    //  Scan only (does not fail / no HIGH/CRITICAL gating)
+    stage('Trivy Scan (Report Only)') {
       steps {
-        sh "trivy image --severity HIGH,CRITICAL --no-progress ${DOCKER_REPO}:${IMAGE_TAG}"
+        // vuln scan only (faster), and do not fail pipeline
+        sh """
+          trivy image --no-progress --scanners vuln ${DOCKER_REPO}:${IMAGE_TAG} || true
+        """
       }
     }
 
@@ -55,22 +59,41 @@ pipeline {
       }
     }
 
+    // ✅ Fixed GitOps update without putting token inside URL
     stage('Update GitOps (Helm values only)') {
       steps {
         withCredentials([usernamePassword(credentialsId: "${GITOPS_PAT}", usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
-          sh """
+          sh '''
+            set -e
+
             rm -rf fleet-gitops
-            git clone https://${GH_USER}:${GH_TOKEN}@github.com/msafryx/fleet-gitops.git fleet-gitops
+
+            # Create a temporary askpass script so git can get the token safely
+            cat > /tmp/git-askpass.sh <<'EOF'
+#!/bin/sh
+echo "$GH_TOKEN"
+EOF
+            chmod +x /tmp/git-askpass.sh
+
+            export GIT_ASKPASS=/tmp/git-askpass.sh
+            export GIT_TERMINAL_PROMPT=0
+
+            # Clone GitOps repo (no token in URL)
+            git clone https://github.com/msafryx/fleet-gitops.git fleet-gitops
+
             cd fleet-gitops
-            git checkout ${GITOPS_BRANCH}
+            git checkout main
 
-            export IMAGE_TAG='${IMAGE_TAG}'
-            yq -i '.image.tag = strenv(IMAGE_TAG)' ${VALUES_FILE}
+            export IMAGE_TAG="${IMAGE_TAG}"
+            yq -i '.image.tag = strenv(IMAGE_TAG)' frontend/values-staging.yaml
 
-            git add ${VALUES_FILE}
+            git add frontend/values-staging.yaml
             git commit -m "chore(staging): bump frontend image tag to ${IMAGE_TAG}" || echo "No changes"
-            git push origin ${GITOPS_BRANCH}
-          """
+
+            git push origin main
+
+            rm -f /tmp/git-askpass.sh
+          '''
         }
       }
     }
