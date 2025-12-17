@@ -32,16 +32,13 @@ pipeline {
     stage('Build Docker Image') {
       steps {
         sh """
-          docker build \
-            -t ${DOCKER_REPO}:${IMAGE_TAG} .
+          docker build -t ${DOCKER_REPO}:${IMAGE_TAG} .
         """
       }
     }
 
-    //  Scan only (does not fail / no HIGH/CRITICAL gating)
     stage('Trivy Scan (Report Only)') {
       steps {
-        // vuln scan only (faster), and do not fail pipeline
         sh """
           trivy image --no-progress --scanners vuln ${DOCKER_REPO}:${IMAGE_TAG} || true
         """
@@ -52,6 +49,7 @@ pipeline {
       steps {
         withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDS}", usernameVariable: 'DH_USER', passwordVariable: 'DH_PASS')]) {
           sh '''
+            set -e
             echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
             docker push ${DOCKER_REPO}:${IMAGE_TAG}
           '''
@@ -59,7 +57,6 @@ pipeline {
       }
     }
 
-    //  Fixed GitOps update without putting token inside URL
     stage('Update GitOps (Helm values only)') {
       steps {
         withCredentials([usernamePassword(credentialsId: "${GITOPS_PAT}", usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
@@ -68,29 +65,42 @@ pipeline {
 
             rm -rf fleet-gitops
 
-            # Create a temporary askpass script so git can get the token safely
+            # Askpass script for PAT
             cat > /tmp/git-askpass.sh <<'EOF'
 #!/bin/sh
 echo "$GH_TOKEN"
 EOF
             chmod +x /tmp/git-askpass.sh
-
             export GIT_ASKPASS=/tmp/git-askpass.sh
             export GIT_TERMINAL_PROMPT=0
 
-            # Clone GitOps repo (no token in URL)
-            git clone https://github.com/msafryx/fleet-gitops.git fleet-gitops
-
+            # Clone GitOps repo
+            git clone ${GITOPS_REPO_HTTPS} fleet-gitops
             cd fleet-gitops
-            git checkout main
+            git checkout ${GITOPS_BRANCH}
 
-            export IMAGE_TAG="${IMAGE_TAG}"
-            yq -i '.image.tag = strenv(IMAGE_TAG)' frontend/values-staging.yaml
+            # Make sure git commit works in Jenkins
+            git config user.email "jenkins@ci.local"
+            git config user.name  "jenkins"
 
-            git add frontend/values-staging.yaml
-            git commit -m "chore(staging): bump frontend image tag to ${IMAGE_TAG}" || echo "No changes"
+            echo "Updating image.tag in ${VALUES_FILE} to: ${IMAGE_TAG}"
 
-            git push origin main
+            # --- Update the tag line safely (no yq) ---
+            # This expects YAML like:
+            # image:
+            #   repository: ...
+            #   tag: ...
+            #
+            # It replaces ONLY the 'tag:' line that has 2 spaces indentation.
+            sed -i "s/^  tag: .*/  tag: \\"${IMAGE_TAG}\\"/" ${VALUES_FILE}
+
+            echo "---- Confirm image values ----"
+            grep -nE "^(image:|  repository:|  tag:)" ${VALUES_FILE} || true
+            echo "------------------------------"
+
+            git add ${VALUES_FILE}
+            git commit -m "chore(staging): bump frontend image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+            git push origin ${GITOPS_BRANCH}
 
             rm -f /tmp/git-askpass.sh
           '''
