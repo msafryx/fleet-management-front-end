@@ -1,56 +1,56 @@
 # =========================
-# Base image
+# 1) Dependencies
 # =========================
-FROM node:20-alpine AS base
+FROM node:20-alpine AS deps
 WORKDIR /app
 
-# =========================
-# Install dependencies
-# =========================
-FROM base AS deps
-
-# Copy only package files from the Next.js app folder
+# If your Next.js app is inside fleet-management-app/ (as your log shows)
 COPY fleet-management-app/package*.json ./
-
-# Install dependencies (you can change to `npm ci` if you use package-lock.json)
 RUN npm install
 
 # =========================
-# Build the Next.js app
+# 2) Build
 # =========================
-FROM deps AS build
+FROM node:20-alpine AS build
+WORKDIR /app
 
-# Copy the rest of the Next.js app source
+COPY --from=deps /app/node_modules ./node_modules
 COPY fleet-management-app/. .
 
-# Disable Next telemetry (optional)
-ENV NEXT_TELEMETRY_DISABLED=1
+# ---- Build-time env (required by your auth config check) ----
+ARG KEYCLOAK_ID
+ARG KEYCLOAK_SECRET
+ARG KEYCLOAK_ISSUER
+ARG NEXTAUTH_URL
+ARG NEXTAUTH_SECRET
+ARG NEXT_PUBLIC_VEHICLE_SERVICE_URL
+ARG NEXT_PUBLIC_DRIVER_SERVICE_URL
+ARG NEXT_PUBLIC_MAINTENANCE_SERVICE_URL
 
-# Build for production (uses Turbopack under the hood in Next 15)
+ENV KEYCLOAK_ID=$KEYCLOAK_ID
+ENV KEYCLOAK_SECRET=$KEYCLOAK_SECRET
+ENV KEYCLOAK_ISSUER=$KEYCLOAK_ISSUER
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+ENV NEXT_PUBLIC_VEHICLE_SERVICE_URL=$NEXT_PUBLIC_VEHICLE_SERVICE_URL
+ENV NEXT_PUBLIC_DRIVER_SERVICE_URL=$NEXT_PUBLIC_DRIVER_SERVICE_URL
+ENV NEXT_PUBLIC_MAINTENANCE_SERVICE_URL=$NEXT_PUBLIC_MAINTENANCE_SERVICE_URL
+
 RUN npm run build
 
 # =========================
-# Production runtime image
+# 3) Runner
 # =========================
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a non-root user for security (optional but good)
-RUN addgroup -g 1001 nodejs \
-  && adduser -D -G nodejs nextjs
-USER nextjs
-
-# Copy necessary files from build stage
-COPY --from=build /app/public ./public
+# Copy Next build output
 COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+COPY --from=build /app/package*.json ./
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/package.json ./package.json
 
-# Next.js default port
 EXPOSE 3000
-
-# Start the production server
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]
