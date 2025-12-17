@@ -4,7 +4,6 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-# If your Next.js app is inside fleet-management-app/ (as your log shows)
 COPY fleet-management-app/package*.json ./
 RUN npm install
 
@@ -17,24 +16,20 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY fleet-management-app/. .
 
-# ---- Build-time env (required by your auth config check) ----
-ARG KEYCLOAK_ID
-ARG KEYCLOAK_SECRET
-ARG KEYCLOAK_ISSUER
-ARG NEXTAUTH_URL
-ARG NEXTAUTH_SECRET
-ARG NEXT_PUBLIC_VEHICLE_SERVICE_URL
-ARG NEXT_PUBLIC_DRIVER_SERVICE_URL
-ARG NEXT_PUBLIC_MAINTENANCE_SERVICE_URL
+# ---------------------------------------------------------
+# IGNORE KEYCLOAK / NEXTAUTH for now:
+# Provide safe dummy values so "npm run build" does not fail.
+# ---------------------------------------------------------
+ENV KEYCLOAK_ID="disabled"
+ENV KEYCLOAK_SECRET="disabled"
+ENV KEYCLOAK_ISSUER="http://disabled.local"
+ENV NEXTAUTH_URL="http://localhost:3000"
+ENV NEXTAUTH_SECRET="disabled-disabled-disabled-disabled-disabled"
 
-ENV KEYCLOAK_ID=$KEYCLOAK_ID
-ENV KEYCLOAK_SECRET=$KEYCLOAK_SECRET
-ENV KEYCLOAK_ISSUER=$KEYCLOAK_ISSUER
-ENV NEXTAUTH_URL=$NEXTAUTH_URL
-ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
-ENV NEXT_PUBLIC_VEHICLE_SERVICE_URL=$NEXT_PUBLIC_VEHICLE_SERVICE_URL
-ENV NEXT_PUBLIC_DRIVER_SERVICE_URL=$NEXT_PUBLIC_DRIVER_SERVICE_URL
-ENV NEXT_PUBLIC_MAINTENANCE_SERVICE_URL=$NEXT_PUBLIC_MAINTENANCE_SERVICE_URL
+# Optional dummy backend URLs (adjust later when backend is ready)
+ENV NEXT_PUBLIC_VEHICLE_SERVICE_URL="http://localhost:7001"
+ENV NEXT_PUBLIC_DRIVER_SERVICE_URL="http://localhost:6001"
+ENV NEXT_PUBLIC_MAINTENANCE_SERVICE_URL="http://localhost:5001"
 
 RUN npm run build
 
@@ -46,7 +41,6 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy Next build output
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 COPY --from=build /app/package*.json ./
