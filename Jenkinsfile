@@ -59,7 +59,7 @@ pipeline {
       }
     }
 
-    // ✅ Fixed GitOps update without putting token inside URL
+    //  Fixed GitOps update without putting token inside URL
     stage('Update GitOps (Helm values only)') {
       steps {
         withCredentials([usernamePassword(credentialsId: "${GITOPS_PAT}", usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
